@@ -3,3 +3,6 @@ datasets
 pyarrow
 pandas
 torch
+soundfile
+torchaudio
+librosa

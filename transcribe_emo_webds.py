@@ -83,17 +83,19 @@ def main(args):
     setup_logging(output=args.output_dir, level=logging.INFO)
 
     logger.info(f"Loading {args.split} split in streaming mode.")
-    base_url = f"https://huggingface.co/datasets/krishnakalyan3/emo_webds/resolve/main/dataset/{args.split}"
+    base_url = f"https://huggingface.co/datasets/krishnakalyan3/emo_webds/resolve/main/dataset/{args.split}/"
     base_url = base_url + "{i}.tar"
     logger.info(f"Total number of shards {n_shards[args.split]}")
 
-    # Shards were loaded in lexicographic order
+    # Load shards in lexicographic order
     indices = sorted([str(i) for i in range(n_shards[args.split])])
     logger.info(f"Starting from shard {args.start_shard}")
     indices = indices[args.start_shard:]
     urls = [base_url.format(i=i) for i in indices]
 
     ds = datasets.load_dataset("webdataset", data_files={args.split: urls}, split=args.split, streaming=True)
+    # in order to get the key out of the transcription, we need to change the line
+    # 435 in transformers.pipelines.automatic_speech_recognition to "yield {**item, **extra}"
     # format for transcription pipeline
     ds = ({**x["flac"], "__key__": x["__key__"]} for x in ds)
 

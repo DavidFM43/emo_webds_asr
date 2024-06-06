@@ -86,15 +86,17 @@ def main(args):
     base_url = f"https://huggingface.co/datasets/krishnakalyan3/emo_webds/resolve/main/dataset/{args.split}"
     base_url = base_url + "{i}.tar"
     logger.info(f"Total number of shards {n_shards[args.split]}")
+
+    # Shards were loaded in lexicographic order
     indices = sorted([str(i) for i in range(n_shards[args.split])])
     logger.info(f"Starting from shard {args.start_shard}")
     indices = indices[args.start_shard:]
-
     urls = [base_url.format(i=i) for i in indices]
-    ds = datasets.load_dataset("webdataset", data_files={args.split: urls}, split=args.split, streaming=True)
 
+    ds = datasets.load_dataset("webdataset", data_files={args.split: urls}, split=args.split, streaming=True)
     # format for transcription pipeline
     ds = ({**x["flac"], "__key__": x["__key__"]} for x in ds)
+
     logger.info(f"Loading model in device {args.device_id}.")
     # load whisper model
     model = load_model(args)
@@ -132,7 +134,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--start-shard",
         type=int,
-        help="Shard index to start data loading.",
+        help="Web dataset Shard index to start data loading.",
         default=0
     )
     args = parser.parse_args()
